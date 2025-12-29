@@ -3,32 +3,29 @@
 ## Features
 
 **Automatic Rolls**
+	- Clear busts and blocks Fold unless you have a bust or you’ve attempted Fold more than once
 	- Rolls while Engaged or Idle
 	- Suspends rolls while **Sneak/Invisible** are active
 
-**Double-Up:**
-	- Uses **Snake Eye** on rolls 7 - 10
-	- Double-Ups low rolls
-	- Blocks accidental Double-Up on a Lucky roll and requires a second Double-Up command to confirm
-	
-**Fold:**
-	- Clear busts	
-	- Blocks Fold unless you have a bust or you’ve attempted Fold more than once
-	
-**Roll Tracker:**
-	- Uses **Crooked Cards** with Roll 1 (optional)
-	- Displays correct values for **Crooked Cards** bonus (COR only), gear and job bonuses in roll effect (any job)
-	- You must find out the roll+ potency from the COR in party and configure it
-	
-**Hold TP:**
-    - Prevents rolls from being used while your TP is at least 1000
-    - Resumes rolls once your TP drops below 1000
-	
 ** Display Overlay:**
 	- Shows **Roll 1** and **Roll 2**
 	- Shows **Rolls** on/off
 	- Shows when rolls are suspended by **Sneak/Invisible**
 	- Indicates if **Engaged Mode** is enabled
+	
+**Double-Up:**
+	- Uses **Snake Eye** on rolls 7 - 10
+	- Double-Ups low rolls
+	- Blocks accidental Double-Up on a Lucky roll and requires a second Double-Up command to confirm
+
+**Hold TP:**
+    - Prevents rolls from being used while your TP is at least 1000 (optional)
+    - Resumes rolls once your TP drops below 1000
+
+**Roll Tracker:**
+	- Uses **Crooked Cards** with Roll 1 (optional)
+	- Displays correct values for **Crooked Cards** bonus (COR only), gear and job bonuses in roll effect (any job)
+	- You must find out the roll+ potency from the COR in party and configure it
 
 ## Commands
 
