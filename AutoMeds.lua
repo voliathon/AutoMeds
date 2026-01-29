@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
 
 _addon.name = 'AutoMeds'
-_addon.version = '1.5.0'
+_addon.version = '1.6.0'
 _addon.author = 'Addon Ave'
-_addon.commands = {'automeds','ameds'}
+_addon.commands = {'ameds'}
 
 require('tables')
 require('strings')
@@ -362,7 +362,7 @@ end
 end
 
 if has_item then
-windower.add_to_chat(207, 'Using '..item..' for '..buff_name..'.')
+windower.add_to_chat(18, 'Using '..item..' for '..buff_name..'.')
 windower.send_command('input /item "'..item..'" '..player.name)
 last_retry_time = now
 missing_item_alerts[buff_name] = nil
@@ -391,7 +391,7 @@ end)
 windower.register_event('lose buff', function(id)
 local name = res.buffs[id] and res.buffs[id].english:lower()
 if name == active_debuff then
-windower.add_to_chat(207, 'Debuff "'..name..'" cleared.')
+windower.add_to_chat(18, 'Debuff "'..name..'" cleared.')
 active_debuff = nil
 use_attempts[name] = nil
 aura_block_until[name] = nil
@@ -435,9 +435,9 @@ local buff = table.concat(args, ' ', 2):lower()
 if not settings.buffs:contains(buff) then
 settings.buffs:add(buff)
 settings:save()
-windower.add_to_chat(207, 'Tracking buff: '..buff)
+windower.add_to_chat(18, 'Tracking buff: '..buff)
 else
-windower.add_to_chat(207, buff..' is already tracked.')
+windower.add_to_chat(18, buff..' is already tracked.')
 end
 
 elseif cmd == 'unwatch' and args[2] then
@@ -445,37 +445,37 @@ local buff = table.concat(args, ' ', 2):lower()
 if settings.buffs:contains(buff) then
 settings.buffs:remove(buff)
 settings:save()
-windower.add_to_chat(207, 'Stopped tracking: '..buff)
+windower.add_to_chat(18, 'Stopped tracking: '..buff)
 else
-windower.add_to_chat(207, buff..' is not tracked')
+windower.add_to_chat(18, buff..' is not tracked')
 end
 
 elseif cmd == 'list' then
-windower.add_to_chat(207, 'Tracked debuffs:')
-for buff in settings.buffs:it() do windower.add_to_chat(207, ' - '..buff) end
+windower.add_to_chat(18, 'Tracked debuffs:')
+for buff in settings.buffs:it() do windower.add_to_chat(18, ' - '..buff) end
 
 elseif cmd == 'toggle' then
 AutoMeds = not AutoMeds
-windower.add_to_chat(207, 'Auto medicine: '..tostring(AutoMeds))
+windower.add_to_chat(18, 'Auto medicine: '..tostring(AutoMeds))
 
 elseif cmd == 'trackalt' then
 settings.alttrack = not settings.alttrack
 settings:save()
-windower.add_to_chat(207, 'Alt tracking: '..tostring(settings.alttrack))
+windower.add_to_chat(18, 'Alt tracking: '..tostring(settings.alttrack))
 
 elseif cmd == 'sitrack' then
 settings.sitrack = not settings.sitrack
 settings:save()
-windower.add_to_chat(207, 'Sneak/Invisible tracker: '..tostring(settings.sitrack))
+windower.add_to_chat(18, 'Sneak/Invisible tracker: '..tostring(settings.sitrack))
 
 elseif cmd == 'aura' and args[2] then
 local aura_cfg = get_global_aura()
 local v = args[2]:lower()
 if v == 'on' then aura_cfg.enabled = true
 elseif v == 'off' then aura_cfg.enabled = false
-else windower.add_to_chat(207, 'Usage: //ameds aura on|off'); return end
+else windower.add_to_chat(18, 'Usage: //ameds aura on|off'); return end
 settings:save()
-windower.add_to_chat(207, 'Aura Awareness: '..tostring(aura_cfg.enabled))
+windower.add_to_chat(18, 'Aura Awareness: '..tostring(aura_cfg.enabled))
 
 elseif cmd == 'aurasmart' and args[2] then
 local v = args[2]:lower()
@@ -484,55 +484,55 @@ aura_cfg.smart = aura_cfg.smart or {}
 if v == 'on' then aura_cfg.smart.enabled = true
 elseif v == 'off' then aura_cfg.smart.enabled = false
 else
-windower.add_to_chat(207, 'Usage: //ameds aurasmart on|off')
+windower.add_to_chat(18, 'Usage: //ameds aurasmart on|off')
 return
 end
 settings:save()
-windower.add_to_chat(207, 'Smart Aura Block: '..tostring(aura_cfg.smart.enabled))
+windower.add_to_chat(18, 'Smart Aura Block: '..tostring(aura_cfg.smart.enabled))
 
 elseif cmd == 'aurablock' and args[2] then
 local v = tonumber(args[2])
 if not v or v < 60 or v > 600 then
-windower.add_to_chat(207, 'Usage: //ameds aurablock [60 - 600]')
+windower.add_to_chat(18, 'Usage: //ameds aurablock [60 - 600]')
 return
 end
 local aura_cfg = get_global_aura()
 aura_cfg.smart = aura_cfg.smart or {}
 aura_cfg.smart.block_time = v
 settings:save()
-windower.add_to_chat(207, ('Aura-block time set to %ds'):format(v))
+windower.add_to_chat(18, ('Aura-block time set to %ds'):format(v))
 
 elseif cmd == 'auradistance' and args[2] then
 local v = tonumber(args[2])
 if not v or v < 1 or v > 20 then
-windower.add_to_chat(207, 'Usage: //ameds auradistance [1-20]')
+windower.add_to_chat(18, 'Usage: //ameds auradistance [1-20]')
 return
 end
 local aura_cfg = get_global_aura()
 aura_cfg.distance = v
 settings:save()
-windower.add_to_chat(207, ('Aura distance set to %d yalms'):format(v))
+windower.add_to_chat(18, ('Aura distance set to %d yalms'):format(v))
 
 elseif cmd == 'auraadd' and args[2] then
 local mon, buff = parse_target_and_buff(args, 2)
 if not mon or not buff then
-windower.add_to_chat(207, 'Usage: //ameds auraadd "[target]" [buff]')
+windower.add_to_chat(18, 'Usage: //ameds auraadd "[target]" [buff]')
 return
 end
 aura_rt_map[mon] = aura_rt_map[mon] or S{}
 aura_rt_map[mon]:add(buff)
 save_aura_rt_map()
-windower.add_to_chat(207, ('[AutoMeds] Added aura: %s - %s'):format(mon, buff))
+windower.add_to_chat(18, ('[AutoMeds] Added aura: %s - %s'):format(mon, buff))
 
 elseif cmd == 'aurarem' and args[2] then
 local mon, maybe_buff = parse_target_and_buff(args, 2)
 if not mon then
-windower.add_to_chat(207, 'Usage: //ameds aurarem "[target]" [buff]')
+windower.add_to_chat(18, 'Usage: //ameds aurarem "[target]" [buff]')
 return
 end
 local set = aura_rt_map[mon]
 if not set then
-windower.add_to_chat(207, ('No entry for target: %s'):format(mon))
+windower.add_to_chat(18, ('No entry for target: %s'):format(mon))
 return
 end
 if maybe_buff and maybe_buff ~= '' then
@@ -541,14 +541,14 @@ if set[nb] then
 set:remove(nb)
 if set:length() == 0 then aura_rt_map[mon] = nil end
 save_aura_rt_map()
-windower.add_to_chat(207, ('Removed %s -> %s'):format(mon, nb))
+windower.add_to_chat(18, ('Removed %s -> %s'):format(mon, nb))
 else
-windower.add_to_chat(207, ('%s does not have buff: %s'):format(mon, nb))
+windower.add_to_chat(18, ('%s does not have buff: %s'):format(mon, nb))
 end
 else
 aura_rt_map[mon] = nil
 save_aura_rt_map()
-windower.add_to_chat(207, ('Removed target entry: %s'):format(mon))
+windower.add_to_chat(18, ('Removed target entry: %s'):format(mon))
 end
 
 elseif cmd == 'auralist' then
@@ -556,41 +556,41 @@ if args[2] then
 local mon = norm(table.concat(args, ' ', 2))
 local set = aura_rt_map[mon]
 if not set then
-windower.add_to_chat(207, ('No entry for: %s'):format(mon))
+windower.add_to_chat(18, ('No entry for: %s'):format(mon))
 return
 end
 local list = set_to_sorted_list(set)
-windower.add_to_chat(207, ('[AutoMeds] %s -> %s'):format(mon, table.concat(list, ', ')))
+windower.add_to_chat(18, ('[AutoMeds] %s -> %s'):format(mon, table.concat(list, ', ')))
 else
 local mons = {}
 for m,_ in pairs(aura_rt_map) do table.insert(mons, m) end
 table.sort(mons)
 if #mons == 0 then
-windower.add_to_chat(207, '[AutoMeds] Aura sources: (none)')
+windower.add_to_chat(18, '[AutoMeds] Aura sources: (none)')
 else
-windower.add_to_chat(207, '[AutoMeds] Aura sources:')
+windower.add_to_chat(18, '[AutoMeds] Aura sources:')
 for _, m in ipairs(mons) do
 local buffs = set_to_sorted_list(aura_rt_map[m])
-windower.add_to_chat(207, (' - %s|%s'):format(m, table.concat(buffs, ',')))
+windower.add_to_chat(18, (' - %s|%s'):format(m, table.concat(buffs, ',')))
 end
 end
 end
 
 elseif cmd == 'help' then
-windower.add_to_chat(208, '[AutoMeds] Commands:')
-windower.add_to_chat(208, '//ameds toggle - Toggle on/off')
-windower.add_to_chat(208, '//ameds watch [buff] - Track a debuff')
-windower.add_to_chat(208, '//ameds unwatch [buff] - Untrack a debuff')
-windower.add_to_chat(208, '//ameds list - Show tracked debuffs')
-windower.add_to_chat(208, '//ameds trackalt - Toggle alt broadcast')
-windower.add_to_chat(208, '//ameds sitrack - Toggle Sneak/Invisible wear tracker')
-windower.add_to_chat(208, '//ameds aura on|off - Enable/Disable Aura Awareness')
-windower.add_to_chat(208, '//ameds aurasmart on|off - Enable/Disable Smart Aura Block')
-windower.add_to_chat(208, '//ameds aurablock [seconds] - Set pause duration [60 - 600]')
-windower.add_to_chat(208, '//ameds auradistance [yalms] - Set distance detection for Aura Awareness')
-windower.add_to_chat(208, '//ameds auraadd ["target"] [debuff] - Add target for Aura Awareness')
-windower.add_to_chat(208, '//ameds aurarem ["target"] [debuff] - Remove target from Aura Awareness')
-windower.add_to_chat(208, '//ameds auralist - List aura sources')
+windower.add_to_chat(2, '[AutoMeds] Commands:')
+windower.add_to_chat(2, '//ameds toggle - Toggle on/off')
+windower.add_to_chat(2, '//ameds watch [buff] - Track a debuff')
+windower.add_to_chat(2, '//ameds unwatch [buff] - Untrack a debuff')
+windower.add_to_chat(2, '//ameds list - Show tracked debuffs')
+windower.add_to_chat(2, '//ameds trackalt - Toggle alt broadcast')
+windower.add_to_chat(2, '//ameds sitrack - Toggle Sneak/Invisible wear tracker')
+windower.add_to_chat(2, '//ameds aura on|off - Enable/Disable Aura Awareness')
+windower.add_to_chat(2, '//ameds aurasmart on|off - Enable/Disable Smart Aura Block')
+windower.add_to_chat(2, '//ameds aurablock [seconds] - Set pause duration [60 - 600]')
+windower.add_to_chat(2, '//ameds auradistance [yalms] - Set distance detection for Aura Awareness')
+windower.add_to_chat(2, '//ameds auraadd ["target"] [debuff] - Add target for Aura Awareness')
+windower.add_to_chat(2, '//ameds aurarem ["target"] [debuff] - Remove target from Aura Awareness')
+windower.add_to_chat(2, '//ameds auralist - List aura sources')
 end
 end)
 
