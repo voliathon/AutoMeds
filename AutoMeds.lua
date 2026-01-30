@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
 
 _addon.name = 'AutoMeds'
-_addon.version = '1.6.1'
+_addon.version = '1.6.2'
 _addon.author = 'Addon Ave'
 _addon.commands = {'ameds'}
 
@@ -44,7 +44,6 @@ res = require('resources')
 --------------------------------------------------------------------------------
 
 local defaults = {}
--- Removed 'slow' from defaults as it has no default item mapped
 defaults.buffs = S{"curse","disease","doom","paralysis","silence"}
 defaults.alttrack = false
 defaults.sitrack = false
@@ -106,7 +105,7 @@ local debuff_items = {
     ["doom"] = "Holy Water",
     ["paralysis"] = "Remedy",
     ["silence"] = "Echo Drops",
-    ["slow"] = nil, -- Add "Panacea" here if desired, but expensive
+    ["slow"] = nil, 
 }
 
 -- State
@@ -301,24 +300,23 @@ windower.register_event('prerender', function()
         if buff_name and settings.buffs:contains(buff_name) then
             local item = debuff_items[buff_name]
 
-            -- Skip if we don't have a mapped item (e.g. Slow with no Panacea)
             if item then 
-                -- Aura Awareness: skip if aura source is nearby
+                local should_skip = false
+
+                -- 1. Check Aura Awareness
                 local src = aura_source_nearby_for(buff_name)
                 if src then
                     if not aura_skip_alerts[buff_name] then
                         windower.add_to_chat(123, ('[AutoMeds] Skipping item use for %s due to nearby aura source: %s.'):format(buff_name, src))
                         aura_skip_alerts[buff_name] = true
                     end
-                    active_debuff = buff_name
-                    found_buff = true
-                    goto continue -- Jump to end of loop iteration
+                    should_skip = true
                 else
                     aura_skip_alerts[buff_name] = nil
                 end
 
-                -- Smart Aura Block: temporary pause if items use >= max_attempts and still have debuff
-                if smart.enabled then
+                -- 2. Check Smart Aura Block (only if not already skipped)
+                if not should_skip and smart.enabled then
                     if aura_block_until[buff_name] and now >= aura_block_until[buff_name] then
                         aura_block_until[buff_name] = nil
                         aura_block_alerted[buff_name] = nil
@@ -333,61 +331,62 @@ windower.register_event('prerender', function()
                             windower.add_to_chat(123, ('[AutoMeds] Pausing %s item use for %ds (assumed aura).'):format(buff_name, remaining))
                             aura_block_alerted[buff_name] = true
                         end
-                        active_debuff = buff_name
-                        found_buff = true
-                        goto continue
-                    end
-
-                    local attempts = use_attempts[buff_name] and #use_attempts[buff_name] or 0
-                    if attempts >= (smart.max_attempts or 2) then
-                        local b_time = smart.block_time or 120
-                        aura_block_until[buff_name] = now + b_time
-                        windower.add_to_chat(123, ('[AutoMeds] Pausing %s item use for %ds (assumed aura after %d attempts).'):format(
-                            buff_name, b_time, attempts))
-                        aura_block_alerted[buff_name] = true
-                        active_debuff = buff_name
-                        found_buff = true
-                        goto continue
+                        should_skip = true
+                    else
+                        local attempts = use_attempts[buff_name] and #use_attempts[buff_name] or 0
+                        if attempts >= (smart.max_attempts or 2) then
+                            local b_time = smart.block_time or 120
+                            aura_block_until[buff_name] = now + b_time
+                            windower.add_to_chat(123, ('[AutoMeds] Pausing %s item use for %ds (assumed aura after %d attempts).'):format(
+                                buff_name, b_time, attempts))
+                            aura_block_alerted[buff_name] = true
+                            should_skip = true
+                        end
                     end
                 end
 
-                -- Use item if available
-                if (now - last_retry_time) > retry_delay then
-                    local inv = windower.ffxi.get_items().inventory
-                    local has_item = false
-                    for _, slot in pairs(inv) do
-                        if type(slot) == "table" and slot.id and slot.id > 0 then
-                            local it = res.items[slot.id]
-                            if it and it.name and it.name:lower() == item:lower() and slot.count > 0 then
-                                has_item = true
-                                break
+                -- 3. Execute or Skip
+                if should_skip then
+                    -- Mark as found so we don't clear active state, but continue loop
+                    active_debuff = buff_name
+                    found_buff = true
+                else
+                    -- Not skipped: Try to use item
+                    if (now - last_retry_time) > retry_delay then
+                        local inv = windower.ffxi.get_items().inventory
+                        local has_item = false
+                        for _, slot in pairs(inv) do
+                            if type(slot) == "table" and slot.id and slot.id > 0 then
+                                local it = res.items[slot.id]
+                                if it and it.name and it.name:lower() == item:lower() and slot.count > 0 then
+                                    has_item = true
+                                    break
+                                end
                             end
                         end
-                    end
 
-                    if has_item then
-                        windower.add_to_chat(18, 'Using '..item..' for '..buff_name..'.')
-                        windower.send_command('input /item "'..item..'" '..player.name)
-                        last_retry_time = now
-                        missing_item_alerts[buff_name] = nil
+                        if has_item then
+                            windower.add_to_chat(18, 'Using '..item..' for '..buff_name..'.')
+                            windower.send_command('input /item "'..item..'" '..player.name)
+                            last_retry_time = now
+                            missing_item_alerts[buff_name] = nil
 
-                        if smart.enabled then
-                            record_attempt(buff_name, now)
-                            trim_attempts(buff_name, now, smart.attempt_window or 8)
+                            if smart.enabled then
+                                record_attempt(buff_name, now)
+                                trim_attempts(buff_name, now, smart.attempt_window or 8)
+                            end
+                        elseif not missing_item_alerts[buff_name] then
+                            windower.add_to_chat(123, 'Missing item "'..(item or '?')..'" for debuff: '..buff_name..'.')
+                            missing_item_alerts[buff_name] = true
                         end
-                    elseif not missing_item_alerts[buff_name] then
-                        windower.add_to_chat(123, 'Missing item "'..(item or '?')..'" for debuff: '..buff_name..'.')
-                        missing_item_alerts[buff_name] = true
                     end
-                end
 
-                active_debuff = buff_name
-                found_buff = true
-                break -- Prioritize one debuff at a time
+                    active_debuff = buff_name
+                    found_buff = true
+                    break -- Stop looking for other debuffs; we are handling this one.
+                end
             end
         end
-        
-        ::continue::
     end
 
     if not found_buff then
